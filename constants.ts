@@ -10,7 +10,6 @@ export const MOCK_MENTORS: Mentor[] = [
     specialization: 'Artificial Intelligence & Ethics',
     avatar: 'https://picsum.photos/seed/sarah/200',
     skills: ['Python', 'PyTorch', 'Ethics in AI', 'Strategic Planning'],
-    rating: 4.9,
     totalSessions: 124,
     availability: ['Mon 9-11 AM', 'Wed 2-4 PM', 'Fri 10-12 AM']
   },
@@ -22,7 +21,6 @@ export const MOCK_MENTORS: Mentor[] = [
     specialization: 'UX/UI & Product Management',
     avatar: 'https://picsum.photos/seed/marcus/200',
     skills: ['Figma', 'User Research', 'Product Strategy', 'Agile'],
-    rating: 4.8,
     totalSessions: 89,
     availability: ['Tue 1-3 PM', 'Thu 4-6 PM']
   },
@@ -34,7 +32,6 @@ export const MOCK_MENTORS: Mentor[] = [
     specialization: 'Cloud Architecture & DevOps',
     avatar: 'https://picsum.photos/seed/elena/200',
     skills: ['AWS', 'Kubernetes', 'Docker', 'Go'],
-    rating: 5.0,
     totalSessions: 210,
     availability: ['Mon 4-6 PM', 'Sat 10-12 AM']
   },
@@ -46,7 +43,6 @@ export const MOCK_MENTORS: Mentor[] = [
     specialization: 'FinTech & Blockchain',
     avatar: 'https://picsum.photos/seed/james/200',
     skills: ['Solidity', 'Financial Modeling', 'Venture Capital'],
-    rating: 4.7,
     totalSessions: 56,
     availability: ['Wed 9-11 AM', 'Fri 2-4 PM']
   }

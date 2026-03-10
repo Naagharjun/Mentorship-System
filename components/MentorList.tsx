@@ -1,18 +1,84 @@
+import React, { useState, useEffect } from 'react';
+import { api } from '../services/api';
+import { User, Mentor } from '../types';
+import UserAvatar from './UserAvatar';
 
-import React, { useState } from 'react';
-import { MOCK_MENTORS } from '../constants';
+const isSlotExpired = (date: string, time: string): boolean => {
+  return new Date(`${date}T${time}`) < new Date();
+};
 
-const MentorList: React.FC = () => {
+const MentorList: React.FC<{ user: User | null }> = ({ user }) => {
+  const [mentors, setMentors] = useState<Mentor[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [requestsSent, setRequestsSent] = useState<Record<string, boolean>>({});
 
-  const filteredMentors = MOCK_MENTORS.filter(mentor =>
+  const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<string>('');
+  const [isBooking, setIsBooking] = useState(false);
+  const [bookingSuccess, setBookingSuccess] = useState('');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const mentorsData = await api.users.getMentors();
+        setMentors(mentorsData as Mentor[]);
+
+        if (user) {
+          const myRequests = await api.requests.getRequestsForUser(user.id, user.role);
+          const sentMap: Record<string, boolean> = {};
+          myRequests.forEach(req => {
+            if (req.status === 'pending') {
+              sentMap[req.mentorId] = true;
+            }
+          });
+          setRequestsSent(sentMap);
+        }
+      } catch (err) {
+        console.error("Failed fetching mentors", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+    const interval = setInterval(fetchData, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
+
+  const handleOpenModal = (mentor: Mentor) => {
+    setSelectedMentor(mentor);
+    setSelectedSlot('');
+    setBookingSuccess('');
+    setIsBooking(false);
+  };
+
+  const handleBook = async (mentor: Mentor) => {
+    if (!user || !selectedSlot) return;
+    setIsBooking(true);
+    try {
+      await api.requests.sendRequest(user.id, mentor.id, user.name, mentor.name, selectedSlot);
+      setRequestsSent(prev => ({ ...prev, [mentor.id]: true }));
+      setBookingSuccess(`Request sent to ${mentor.name} for ${selectedSlot}!`);
+      setTimeout(() => {
+        setSelectedMentor(null);
+        setBookingSuccess('');
+      }, 2000);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsBooking(false);
+    }
+  };
+
+  const filteredMentors = mentors.filter(mentor =>
     mentor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    mentor.specialization.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (mentor.specialization && mentor.specialization.toLowerCase().includes(searchTerm.toLowerCase())) ||
     mentor.skills?.some(s => s.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-8 animate-fade-in relative">
       {/* Header & Search */}
       <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
@@ -53,15 +119,7 @@ const MentorList: React.FC = () => {
             <div className="relative flex gap-6">
               <div className="relative">
                 <div className="absolute inset-0 bg-blue-600 rounded-2xl rotate-3 opacity-0 group-hover:opacity-5 transition-all duration-300"></div>
-                <img
-                  src={mentor.avatar}
-                  alt={mentor.name}
-                  className="w-24 h-24 rounded-2xl object-cover ring-4 ring-white shadow-md relative z-10"
-                />
-                <div className="absolute -bottom-2 -right-2 bg-white px-2 py-0.5 rounded-full border border-slate-100 shadow-sm z-20 flex items-center gap-1">
-                  <span className="text-xs">⭐</span>
-                  <span className="text-xs font-bold text-slate-700">{mentor.rating}</span>
-                </div>
+                <UserAvatar name={mentor.name} role="mentor" size={96} className="rounded-2xl ring-4 ring-white shadow-md relative z-10" />
               </div>
 
               <div className="flex-1 min-w-0 pt-1">
@@ -87,20 +145,16 @@ const MentorList: React.FC = () => {
               </div>
             </div>
 
-            <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-between gap-4">
-              <div className="flex flex-col">
-                <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Availability</span>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                  </span>
-                  <span className="text-xs font-bold text-slate-700">{mentor.availability[0]}</span>
-                </div>
-              </div>
-
-              <button className="flex-1 bg-slate-900 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-lg shadow-slate-900/10 hover:bg-slate-800 hover:shadow-xl hover:shadow-slate-900/20 active:scale-95 transition-all">
-                Book Session
+            <div className="mt-4 flex items-center justify-end">
+              <button
+                onClick={() => handleOpenModal(mentor)}
+                disabled={!!requestsSent[mentor.id]}
+                className={`px-5 py-2.5 rounded-xl text-sm font-semibold shadow-lg transition-all active:scale-95 ${requestsSent[mentor.id]
+                  ? 'bg-emerald-100 text-emerald-700 shadow-none cursor-default'
+                  : 'bg-slate-900 text-white shadow-slate-900/10 hover:bg-slate-800 hover:shadow-xl hover:shadow-slate-900/20'
+                  }`}
+              >
+                {requestsSent[mentor.id] ? '✓ Requested' : 'Connect'}
               </button>
             </div>
           </div>
@@ -108,7 +162,7 @@ const MentorList: React.FC = () => {
       </div>
 
       {/* Empty State */}
-      {filteredMentors.length === 0 && (
+      {!isLoading && filteredMentors.length === 0 && (
         <div className="text-center py-24 bg-white rounded-3xl border border-dashed border-slate-200 animate-fade-in">
           <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl shadow-sm">
             🤔
@@ -127,9 +181,98 @@ const MentorList: React.FC = () => {
       )}
 
       {/* Sessions Info Footer */}
-      {filteredMentors.length > 0 && (
+      {!isLoading && filteredMentors.length > 0 && (
         <div className="text-center space-y-2 py-4">
           <p className="text-sm text-slate-400 font-medium">Showing {filteredMentors.length} expert mentors ready to help you.</p>
+        </div>
+      )}
+
+      {/* Booking Modal */}
+      {selectedMentor && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+
+            {/* Modal Header */}
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <div className="flex items-center gap-4">
+                <UserAvatar name={selectedMentor.name} role="mentor" size={48} className="rounded-xl shadow-sm" />
+                <div>
+                  <h3 className="font-bold text-slate-900 leading-tight">Book {selectedMentor.name.split(' ')[0]}</h3>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mt-0.5">{selectedMentor.specialization || 'Session'}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedMentor(null)}
+                className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-black/5 rounded-full transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Slots Selection */}
+            <div className="p-6 overflow-y-auto">
+              <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4">Select a Time</h4>
+              <div className="grid grid-cols-2 gap-3">
+                {selectedMentor.sessionSlots && selectedMentor.sessionSlots.length > 0 ? (
+                  selectedMentor.sessionSlots.map((slot, idx) => {
+                    const expired = isSlotExpired(slot.date, slot.time);
+                    const remaining = slot.available;
+                    const disabled = expired || remaining <= 0;
+                    const slotString = `${slot.date} at ${slot.time}`;
+                    const isSelected = selectedSlot === slotString;
+
+                    return (
+                      <button
+                        key={idx}
+                        disabled={disabled}
+                        onClick={() => setSelectedSlot(slotString)}
+                        className={`p-3 rounded-xl border-2 text-left transition-all ${disabled
+                          ? 'border-slate-100 bg-slate-50 opacity-50 cursor-not-allowed'
+                          : isSelected
+                            ? 'border-indigo-600 bg-indigo-50 shadow-md shadow-indigo-600/10'
+                            : 'border-slate-200 hover:border-indigo-300 hover:bg-slate-50'
+                          }`}
+                      >
+                        <div className={`font-bold ${isSelected ? 'text-indigo-900' : 'text-slate-900'}`}>{slot.time}</div>
+                        <div className={`text-xs mt-0.5 ${isSelected ? 'text-indigo-600 font-medium' : 'text-slate-500'}`}>{slot.date}</div>
+                        {remaining > 0 && <div className="text-[10px] font-bold text-emerald-600 mt-1">{remaining} left</div>}
+                      </button>
+                    )
+                  })
+                ) : (
+                  <div className="col-span-2 text-center py-6">
+                    <p className="text-slate-500 font-medium bg-slate-50 p-4 rounded-xl text-sm border border-slate-100">Mentor is not available at the moment.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-6 border-t border-slate-100 bg-white space-y-3">
+              {/* Success message */}
+              {bookingSuccess && (
+                <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+                  <span className="text-2xl">🎉</span>
+                  <p className="text-emerald-700 text-sm font-bold">{bookingSuccess}</p>
+                </div>
+              )}
+
+              {/* Book Button */}
+              <button
+                onClick={() => handleBook(selectedMentor)}
+                disabled={requestsSent[selectedMentor.id] || isBooking || !selectedSlot}
+                className={`w-full py-4 rounded-2xl text-sm font-black uppercase tracking-widest shadow-xl transition-all active:scale-[0.98] ${requestsSent[selectedMentor.id]
+                  ? 'bg-emerald-100 text-emerald-700 shadow-none cursor-default'
+                  : (!selectedSlot)
+                    ? 'bg-slate-200 text-slate-400 shadow-none cursor-not-allowed'
+                    : 'bg-slate-900 hover:bg-slate-800 text-white shadow-slate-900/20'
+                  }`}
+              >
+                {isBooking ? 'Sending Request...' : requestsSent[selectedMentor.id] ? '✓ Request Sent!' : '🗓 Book a Session'}
+              </button>
+            </div>
+
+          </div>
         </div>
       )}
     </div>

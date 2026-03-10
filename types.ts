@@ -8,13 +8,17 @@ export interface User {
   skills?: string[];
   bio?: string;
   password?: string; // Added for mock login validation
+  specialization?: string; // Move to User so Partial<User> works easily
+  availability?: string[];
+  sessionSlots?: { date: string, time: string, available: number }[];
+  lastActive?: string;
+  isBlocked?: boolean;
 }
 
+// Keeping Mentor distinct but extending is fine since standard User allows optionals now
 export interface Mentor extends User {
-  specialization: string;
-  availability: string[];
-  rating: number;
-  totalSessions: number;
+  totalSessions?: number;
+  sessionSlots?: { date: string, time: string, available: number }[];
 }
 
 export interface Session {
@@ -25,6 +29,17 @@ export interface Session {
   endTime: string;
   status: 'scheduled' | 'completed' | 'cancelled';
   topic: string;
+}
+
+export interface ConnectionRequest {
+  id: string;
+  menteeId: string;
+  mentorId: string;
+  status: 'pending' | 'accepted' | 'rejected' | 'cancelled';
+  timestamp: number;
+  menteeName: string;
+  mentorName: string;
+  selectedSlot?: string;
 }
 
 export interface AuthState {

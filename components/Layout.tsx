@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { User } from '../types';
+import UserAvatar from './UserAvatar';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -22,11 +23,18 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, activeTab, se
 
   if (!user) return <>{children}</>;
 
-  const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-    { id: 'mentors', label: 'Find Mentors', icon: '🔍' },
-    { id: 'sessions', label: 'My Sessions', icon: '📅' },
-  ];
+  /* Role-based navigation */
+  const navItems = user?.role === 'mentor'
+    ? [
+      { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+      { id: 'sessions', label: 'My Sessions', icon: '📅' },
+      { id: 'requests', label: 'Requests', icon: '📩' }, // Placeholder for mentor requests
+    ]
+    : [
+      { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+      { id: 'mentors', label: 'Find Mentors', icon: '🔍' },
+      { id: 'sessions', label: 'My Sessions', icon: '📅' },
+    ];
 
   const formattedDate = currentTime.toLocaleDateString('en-US', {
     weekday: 'short',
@@ -48,21 +56,20 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, activeTab, se
       <aside className="w-full md:w-64 bg-white border-r border-slate-200 flex-shrink-0 flex flex-col relative z-20">
         <div className="p-8">
           <h1 className="text-2xl font-black text-blue-600 flex items-center gap-3 tracking-tight">
-            <span className="text-3xl bg-blue-50 p-2 rounded-xl shadow-sm border border-blue-100">🧩</span> 
+            <span className="text-3xl bg-blue-50 p-2 rounded-xl shadow-sm border border-blue-100">🧩</span>
             MentorLink
           </h1>
         </div>
-        
+
         <nav className="flex-1 px-4 space-y-2">
           {navItems.map((item) => (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl text-sm font-bold transition-all ${
-                activeTab === item.id
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-              }`}
+              className={`w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl text-sm font-bold transition-all ${activeTab === item.id
+                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
+                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                }`}
             >
               <span className={`text-xl ${activeTab === item.id ? 'brightness-0 invert' : ''}`}>{item.icon}</span>
               {item.label}
@@ -71,10 +78,10 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, activeTab, se
         </nav>
 
         <div className="p-6 border-t border-slate-100 mt-auto">
-           <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">System Core</p>
-             <p className="text-[10px] font-bold text-blue-500">v1.2.4 Production</p>
-           </div>
+          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">System Core</p>
+            <p className="text-[10px] font-bold text-blue-500">v1.2.4 Production</p>
+          </div>
         </div>
       </aside>
 
@@ -84,7 +91,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, activeTab, se
           <h2 className="text-3xl font-black text-slate-900 capitalize tracking-tight">
             {activeTab.replace('-', ' ')}
           </h2>
-          
+
           <div className="flex items-center gap-4">
             <div className="flex flex-col items-end">
               {/* Date & Time display */}
@@ -96,23 +103,22 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, activeTab, se
 
               {/* Profile section */}
               <div className="flex items-center gap-4">
-                <div className="flex items-center gap-3 text-right">
+                <button
+                  onClick={() => setActiveTab('profile')}
+                  className="flex items-center gap-3 text-right hover:bg-slate-50 p-2 rounded-2xl transition-colors cursor-pointer text-left"
+                >
                   <div className="hidden sm:block">
                     <p className="text-sm font-black text-slate-900 leading-none">{user.name}</p>
                     <p className="text-[10px] font-bold text-slate-400 mt-1.5 leading-none bg-slate-50 px-2 py-0.5 rounded-full inline-block uppercase tracking-wider">{user.role}</p>
                   </div>
                   <div className="relative">
-                    <img 
-                      src={user.avatar} 
-                      alt={user.name} 
-                      className="w-11 h-11 rounded-full border-2 border-white ring-2 ring-blue-500/10 shadow-lg object-cover"
-                    />
+                    <UserAvatar name={user.name} role={user.role} size={44} className="rounded-full ring-2 ring-blue-500/10 shadow-lg" />
                     <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
                   </div>
-                </div>
-                
+                </button>
+
                 <div className="h-10 w-px bg-slate-200"></div>
-                
+
                 <button
                   onClick={onLogout}
                   title="Sign Out"
@@ -126,12 +132,12 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, activeTab, se
             </div>
           </div>
         </header>
-        
+
         <div className="flex-1 overflow-y-auto p-6 md:p-10 max-w-7xl w-full mx-auto relative">
           {/* Subtle background decoration in content area */}
           <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-100/20 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
           <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-100/20 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
-          
+
           <div className="relative z-0">
             {children}
           </div>

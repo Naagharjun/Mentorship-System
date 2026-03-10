@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { User } from '../types';
 
 interface RegisterProps {
-  onRegister: (user: User) => void;
+  onRegister: (user: User) => Promise<void>;
   onToggleLogin: () => void;
 }
 
@@ -12,10 +12,11 @@ const Register: React.FC<RegisterProps> = ({ onRegister, onToggleLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [role, setRole] = useState<'mentee' | 'mentor'>('mentee');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -30,21 +31,29 @@ const Register: React.FC<RegisterProps> = ({ onRegister, onToggleLogin }) => {
     }
 
     setIsLoading(true);
-    
-    // Simulate API delay
-    setTimeout(() => {
-      onRegister({
-        id: `u-${Math.random().toString(36).substr(2, 9)}`,
+
+    try {
+      // Create user object (ID will be assigned by API/Backend)
+      // Note: In a real app we'd send just the data, but our mock register expects a User object
+      // We'll trust the API to overwrite ID if needed or just send what we have.
+      const newUser: User = {
+        id: '', // API will assign
         name: name || 'New User',
         email: email || 'user@example.com',
-        role: 'mentee',
-        avatar: `https://picsum.photos/seed/${name || 'user'}/200`,
+        role: role,
+        avatar: '',
         skills: [],
         bio: 'Just joined MentorLink Pro!',
-        password: password
-      });
+        password: password // Adding password to user object for our mock backend to save it
+      };
+
+      await onRegister(newUser);
+      // App.tsx handles the state update and redirection
+    } catch (err: any) {
+      setError(err.message || 'Registration failed');
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -54,10 +63,10 @@ const Register: React.FC<RegisterProps> = ({ onRegister, onToggleLogin }) => {
         {/* Animated Background Shapes */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/10 rounded-full blur-[100px] -mr-48 -mt-48 animate-pulse"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/20 rounded-full blur-[80px] -ml-32 -mb-32"></div>
-        
+
         <div className="relative z-10">
           <h1 className="text-4xl font-bold mb-4 flex items-center gap-3">
-            <span className="text-5xl drop-shadow-lg">🧩</span> 
+            <span className="text-5xl drop-shadow-lg">🧩</span>
             <span className="tracking-tight">MentorLink Pro</span>
           </h1>
           <p className="text-indigo-100 text-lg max-w-md font-medium leading-relaxed">
@@ -71,7 +80,12 @@ const Register: React.FC<RegisterProps> = ({ onRegister, onToggleLogin }) => {
               "Joining this community was the single best decision for my technical growth. The personalized paths are incredible."
             </p>
             <div className="flex items-center gap-4">
-              <img src="https://picsum.photos/seed/marcus/100" className="w-12 h-12 rounded-full border-2 border-indigo-400 shadow-inner" alt="Sarah" />
+              <svg width="48" height="48" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-12 h-12 rounded-full border-2 border-indigo-400 shadow-inner flex-shrink-0">
+                <rect width="40" height="40" rx="20" fill="rgba(99,102,241,0.15)" />
+                <circle cx="20" cy="15" r="7" fill="#818cf8" />
+                <path d="M6 36c0-7.732 6.268-14 14-14s14 6.268 14 14" fill="#818cf8" />
+              </svg>
+
               <div>
                 <p className="font-bold text-base">Marcus Rodriguez</p>
                 <p className="text-sm text-indigo-200/80">Product Lead at DesignIO</p>
@@ -102,27 +116,27 @@ const Register: React.FC<RegisterProps> = ({ onRegister, onToggleLogin }) => {
                   <p className="text-xs font-bold leading-tight">{error}</p>
                 </div>
               )}
-              
+
               <div>
                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Full Name</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="John Doe"
+                  placeholder=""
                   className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Email Address</label>
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="john@example.com"
+                  placeholder=""
                   className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium"
                 />
               </div>
@@ -130,8 +144,8 @@ const Register: React.FC<RegisterProps> = ({ onRegister, onToggleLogin }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Password</label>
-                  <input 
-                    type="password" 
+                  <input
+                    type="password"
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -141,8 +155,8 @@ const Register: React.FC<RegisterProps> = ({ onRegister, onToggleLogin }) => {
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Confirm</label>
-                  <input 
-                    type="password" 
+                  <input
+                    type="password"
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
@@ -152,10 +166,40 @@ const Register: React.FC<RegisterProps> = ({ onRegister, onToggleLogin }) => {
                 </div>
               </div>
 
-              <button 
-                type="submit" 
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">I want to be a:</label>
+                <div className="grid grid-cols-2 gap-4">
+                  <label className={`cursor-pointer border-2 rounded-2xl p-4 flex flex-col items-center gap-2 transition-all ${role === 'mentee' ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-slate-200 hover:border-indigo-200'}`}>
+                    <input
+                      type="radio"
+                      name="role"
+                      value="mentee"
+                      checked={role === 'mentee'}
+                      onChange={() => setRole('mentee')}
+                      className="hidden"
+                    />
+                    <span className="text-2xl">👨‍🎓</span>
+                    <span className="font-bold text-sm">Mentee</span>
+                  </label>
+                  <label className={`cursor-pointer border-2 rounded-2xl p-4 flex flex-col items-center gap-2 transition-all ${role === 'mentor' ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-slate-200 hover:border-purple-200'}`}>
+                    <input
+                      type="radio"
+                      name="role"
+                      value="mentor"
+                      checked={role === 'mentor'}
+                      onChange={() => setRole('mentor')}
+                      className="hidden"
+                    />
+                    <span className="text-2xl">👩‍🏫</span>
+                    <span className="font-bold text-sm">Mentor</span>
+                  </label>
+                </div>
+              </div>
+
+              <button
+                type="submit"
                 disabled={isLoading}
-                className="w-full bg-indigo-600 text-white font-bold py-4 px-4 rounded-2xl hover:bg-indigo-700 shadow-xl shadow-indigo-500/30 transition-all active:scale-[0.98] disabled:opacity-70 flex justify-center items-center gap-3 text-lg mt-4"
+                className="w-full bg-indigo-600 text-white font-bold py-4 px-4 rounded-2xl hover:bg-indigo-700 shadow-xl shadow-indigo-500/30 transition-all active:scale-[0.98] disabled:opacity-70 flex justify-center items-center gap-3 text-lg mt-6"
               >
                 {isLoading ? (
                   <>
