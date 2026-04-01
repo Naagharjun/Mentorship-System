@@ -209,17 +209,6 @@ const App: React.FC = () => {
     return <AdminDashboard user={auth.user} onLogout={handleLogout} />;
   }
 
-  // Intercept mentors with truly incomplete profiles (no specialization AND no skills)
-  // This avoids blocking mentors who were manually inserted in the DB with partial data
-  if (auth.user?.role === 'mentor' && !auth.user?.specialization && (!auth.user?.skills || auth.user.skills.length === 0)) {
-    return (
-      <MentorOnboarding
-        user={auth.user}
-        onComplete={(updatedUser) => setAuth({ user: updatedUser, isAuthenticated: true })}
-        onLogout={handleLogout}
-      />
-    );
-  }
 
   return (
     <ErrorBoundary>
