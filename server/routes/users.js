@@ -102,7 +102,11 @@ router.patch('/:id', async (req, res) => {
             availability: updatedUser.availability,
             sessionSlots: updatedUser.sessionSlots,
             totalSessions: updatedUser.totalSessions,
-            isBlocked: updatedUser.isBlocked
+            isBlocked: updatedUser.isBlocked,
+            education: updatedUser.education,
+            experience: updatedUser.experience,
+            interests: updatedUser.interests,
+            lastActive: updatedUser.lastActive
         };
 
         res.status(200).json(userResponse);

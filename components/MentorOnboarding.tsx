@@ -13,13 +13,17 @@ const MentorOnboarding: React.FC<Props> = ({ user, onComplete, onLogout }) => {
     const [bio, setBio] = useState('');
     const [skills, setSkills] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState('');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
 
-        // Process comma separated strings into arrays
-        const skillsArray = skills.split(',').map(s => s.trim()).filter(Boolean);
+        // Convert comma-separated skills to proper {name, proficiency} objects
+        const skillsArray = skills.split(',').map(s => ({
+            name: s.trim(),
+            proficiency: 'Beginner' as const
+        })).filter(s => s.name);
 
         try {
             const updatedUser = await api.users.updateProfile(user.id, {
@@ -28,9 +32,10 @@ const MentorOnboarding: React.FC<Props> = ({ user, onComplete, onLogout }) => {
                 skills: skillsArray,
             });
             onComplete(updatedUser);
-        } catch (err) {
+        } catch (err: any) {
             console.error("Failed to update profile", err);
-            setIsSubmitting(false); // Only allow re-submission on failure
+            setError(err.message || 'Failed to save profile. Please try again.');
+            setIsSubmitting(false);
         }
     };
 
@@ -54,6 +59,12 @@ const MentorOnboarding: React.FC<Props> = ({ user, onComplete, onLogout }) => {
                 <p className="text-slate-500 font-medium text-center mb-8 max-w-sm">
                     Mentees are looking for your expertise. Please provide a few more details to activate your Mentor account.
                 </p>
+
+                {error && (
+                    <div className="w-full p-3 bg-rose-50 border border-rose-200 text-rose-700 text-sm font-semibold rounded-xl text-center">
+                        {error}
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit} className="w-full space-y-6">
                     <div>
