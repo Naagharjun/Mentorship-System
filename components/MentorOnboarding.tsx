@@ -111,6 +111,17 @@ const MentorOnboarding: React.FC<Props> = ({ user, onComplete, onLogout }) => {
                     >
                         {isSubmitting ? 'Saving Profile...' : 'Complete Profile & Continue'}
                     </button>
+
+                    <p className="text-center text-xs text-slate-400 mt-2">
+                        Having trouble?{' '}
+                        <button
+                            type="button"
+                            onClick={onLogout}
+                            className="font-bold text-slate-500 hover:text-slate-700 underline"
+                        >
+                            Go back and try logging in again
+                        </button>
+                    </p>
                 </form>
 
             </div>

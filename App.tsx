@@ -162,8 +162,9 @@ const App: React.FC = () => {
       setAuth({ user: response.user, isAuthenticated: false });
       setShowRegister(false);
       setJustRegistered(true);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Registration failed", err);
+      throw err; // Re-throw so Register.tsx can show error to the user
     }
   };
 
