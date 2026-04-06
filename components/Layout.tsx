@@ -188,23 +188,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, activeTab, se
           </div>
         </header>
 
-        {/* Mobile Sub-Header (Compact profile/notifications on mobile) */}
-        <div className="md:hidden bg-white border-b border-slate-200 p-4 flex justify-between items-center">
-          <h2 className="text-xl font-black text-slate-900 capitalize tracking-tight">
-            {activeTab.replace('-', ' ')}
-          </h2>
-          <div className="flex items-center gap-2">
-            <NotificationBell userId={user.id} />
-            <button
-              onClick={() => setActiveTab('profile')}
-              className="relative"
-            >
-              <UserAvatar src={user.avatar} name={user.name} role={user.role} size={36} className="rounded-full ring-2 ring-blue-500/10" />
-            </button>
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-10 max-w-7xl w-full mx-auto relative">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-10 pb-28 md:pb-10 max-w-7xl w-full mx-auto relative scroll-smooth">
           {/* Subtle background decoration in content area */}
           <div className="absolute top-0 right-0 w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-blue-100/20 rounded-full blur-[80px] md:blur-[120px] -z-10 pointer-events-none"></div>
           <div className="absolute bottom-0 left-0 w-[200px] md:w-[400px] h-[200px] md:h-[400px] bg-indigo-100/20 rounded-full blur-[60px] md:blur-[100px] -z-10 pointer-events-none"></div>
@@ -214,6 +198,48 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, activeTab, se
           </div>
         </div>
       </main>
+
+      {/* Persistent Bottom Navigation (Mobile Only) */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-slate-200/60 h-20 px-6 flex justify-between items-center z-40 pb-safe shadow-[0_-8px_30px_rgb(0,0,0,0.04)]">
+        {[
+          { id: 'dashboard', label: 'Home', icon: '📊' },
+          user.role === 'mentee' ? { id: 'mentors', label: 'Search', icon: '🔍' } : { id: 'requests', label: 'Requests', icon: '📩' },
+          { id: 'sessions', label: 'Sessions', icon: '📅' },
+          { id: 'chat', label: 'Chat', icon: '💬', badge: unreadCount },
+        ].map((item) => (
+          <button
+            key={item.id}
+            onClick={() => setActiveTab(item.id)}
+            className={`flex flex-col items-center gap-1.5 transition-all relative ${
+              activeTab === item.id ? 'text-blue-600 scale-110' : 'text-slate-400'
+            }`}
+          >
+            <span className={`text-2xl ${activeTab === item.id ? 'drop-shadow-[0_0_8px_rgba(37,99,235,0.2)]' : 'grayscale opacity-70'}`}>
+              {item.icon}
+            </span>
+            <span className={`text-[9px] font-black uppercase tracking-widest ${activeTab === item.id ? 'opacity-100' : 'opacity-40'}`}>
+              {item.label}
+            </span>
+            {item.badge ? item.badge > 0 && (
+              <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full border-2 border-white shadow-sm">
+                {item.badge}
+              </span>
+            ) : null}
+            {activeTab === item.id && (
+              <div className="absolute -top-3 w-1 h-1 bg-blue-600 rounded-full"></div>
+            )}
+          </button>
+        ))}
+        
+        {/* Menu Toggle for everything else */}
+        <button
+          onClick={() => setIsMobileMenuOpen(true)}
+          className="flex flex-col items-center gap-1.5 text-slate-400"
+        >
+          <span className="text-2xl grayscale opacity-70">☰</span>
+          <span className="text-[9px] font-black uppercase tracking-widest opacity-40">More</span>
+        </button>
+      </nav>
     </div>
   );
 };

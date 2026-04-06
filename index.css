@@ -109,10 +109,15 @@ body {
   }
 }
 
-/* Medium/Large (Tablet Landscape/Small Desktop) > 768px */
-@media (min-width: 769px) {
-  .desktop-hide {
-    display: none !important;
+/* Utility for mobile safe areas (notches/home bars) */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@media (max-width: 768px) {
+  /* Smoother scrolling for the main content when bottom nav is present */
+  .overflow-y-auto {
+    -webkit-overflow-scrolling: touch;
   }
 }
 
