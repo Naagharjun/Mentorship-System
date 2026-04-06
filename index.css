@@ -47,3 +47,76 @@ body {
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.5);
 }
+
+/* Responsive Design System & Media Queries */
+:root {
+  --mobile-padding: 1.25rem;
+  --tablet-padding: 2rem;
+  --desktop-padding: 2.5rem;
+}
+
+/* Extra Small (Mobile) < 480px */
+@media (max-width: 480px) {
+  html {
+    font-size: 13px;
+  }
+  
+  .container {
+    padding-left: var(--mobile-padding);
+    padding-right: var(--mobile-padding);
+  }
+
+  .card-compact {
+    padding: 1rem !important;
+  }
+
+  .text-responsive-title {
+    font-size: 1.5rem !important;
+  }
+}
+
+/* Small/Medium (Tablet/Large Phone) < 768px */
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+  
+  .container {
+    padding-left: var(--mobile-padding);
+    padding-right: var(--mobile-padding);
+  }
+  
+  /* Make all glass elements have slightly higher opacity on mobile for better legibility */
+  .glass {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+  }
+
+  /* Utility to hide elements on mobile that are too bulky */
+  .mobile-hide {
+    display: none !important;
+  }
+
+  /* Stack items vertically on mobile */
+  .mobile-stack {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  /* Full width buttons on mobile */
+  .mobile-full-width {
+    width: 100% !important;
+  }
+}
+
+/* Medium/Large (Tablet Landscape/Small Desktop) > 768px */
+@media (min-width: 769px) {
+  .desktop-hide {
+    display: none !important;
+  }
+}
+
+/* Custom transitions for the mobile sidebar */
+.sidebar-transition {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}

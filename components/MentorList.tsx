@@ -138,14 +138,14 @@ const MentorList: React.FC<{ user: User | null }> = ({ user }) => {
   return (
     <div className="space-y-8 animate-fade-in relative">
       {/* Header & Search */}
-      <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm relative overflow-hidden">
+      <div className="bg-white rounded-2xl md:rounded-3xl p-6 md:p-8 border border-slate-200 shadow-sm relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
 
         <div className="relative z-10 space-y-6">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="max-w-xl">
-              <h3 className="text-3xl font-black text-slate-900 tracking-tight">Find Your Perfect Mentor</h3>
-              <p className="text-slate-500 mt-2 text-lg font-medium">Connect with industry experts who can accelerate your career growth.</p>
+              <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Find Your Perfect Mentor</h3>
+              <p className="text-slate-500 mt-2 text-base md:text-lg font-medium">Connect with industry experts who can accelerate your career growth.</p>
             </div>
 
             <div className="relative w-full md:w-96 group">
@@ -197,7 +197,7 @@ const MentorList: React.FC<{ user: User | null }> = ({ user }) => {
         {filteredMentors.map((mentor, index) => (
           <div
             key={mentor.id}
-            className="group bg-white rounded-3xl p-6 border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden"
+            className="group bg-white rounded-2xl md:rounded-3xl p-5 md:p-6 border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden"
             style={{ animationDelay: `${index * 50}ms` }}
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none translate-x-10 -translate-y-10"></div>
@@ -205,7 +205,7 @@ const MentorList: React.FC<{ user: User | null }> = ({ user }) => {
             <div className="relative flex gap-6">
               <div className="relative">
                 <div className="absolute inset-0 bg-blue-600 rounded-2xl rotate-3 opacity-0 group-hover:opacity-5 transition-all duration-300"></div>
-                <UserAvatar src={mentor.avatar} name={mentor.name} role="mentor" size={96} className="rounded-2xl ring-4 ring-white shadow-md relative z-10" />
+                <UserAvatar src={mentor.avatar} name={mentor.name} role="mentor" size={64} className="md:size-24 rounded-2xl ring-4 ring-white shadow-md relative z-10" />
               </div>
 
               <div className="flex-1 min-w-0 pt-1">
@@ -301,8 +301,8 @@ const MentorList: React.FC<{ user: User | null }> = ({ user }) => {
 
       {/* Booking Modal */}
       {selectedMentor && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-0 md:p-4 animate-in fade-in duration-300">
+          <div className="bg-white md:rounded-3xl max-w-md w-full shadow-2xl overflow-hidden flex flex-col h-full md:h-auto md:max-h-[90vh]">
 
             {/* Modal Header */}
             <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">

@@ -116,16 +116,16 @@ const Chat: React.FC<ChatProps> = ({ user, connectionId, recipientId, recipientN
     };
 
     return (
-        <div className="flex flex-col h-[600px] bg-white/40 backdrop-blur-2xl rounded-[3rem] border border-white/50 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-500 relative">
+        <div className="flex flex-col h-full bg-white/40 backdrop-blur-2xl md:rounded-[3rem] border border-white/50 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-500 relative">
             {/* Modern Gradient Background */}
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 via-white/50 to-violet-50/50 -z-10"></div>
             <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-[100px] -mr-32 -mt-32"></div>
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-violet-500/5 rounded-full blur-[100px] -ml-32 -mb-32"></div>
 
             {/* Header */}
-            <div className="px-8 py-6 bg-white/60 backdrop-blur-xl flex items-center justify-between border-b border-white/50 z-10">
-                <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-black text-xl shadow-lg border border-white/20">
+            <div className="px-4 md:px-8 py-4 md:py-6 bg-white/60 backdrop-blur-xl flex items-center justify-between border-b border-white/50 z-10">
+                <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+                    <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-black text-lg md:text-xl shadow-lg border border-white/20 shrink-0">
                         {recipientName.charAt(0)}
                     </div>
                     <div>
@@ -136,16 +136,13 @@ const Chat: React.FC<ChatProps> = ({ user, connectionId, recipientId, recipientN
                         </div>
                     </div>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button className="w-11 h-11 rounded-2xl bg-white/80 hover:bg-white flex items-center justify-center text-indigo-600 transition-all border border-white shadow-sm hover:shadow-md active:scale-95">
+                <div className="flex items-center gap-2 md:gap-3">
+                    <button className="hidden sm:flex w-10 h-10 md:w-11 md:h-11 rounded-xl md:rounded-2xl bg-white/80 hover:bg-white items-center justify-center text-indigo-600 transition-all border border-white shadow-sm hover:shadow-md active:scale-95">
                         <span className="text-base">📞</span>
-                    </button>
-                    <button className="w-11 h-11 rounded-2xl bg-white/80 hover:bg-white flex items-center justify-center text-indigo-600 transition-all border border-white shadow-sm hover:shadow-md active:scale-95">
-                        <span className="text-base">📹</span>
                     </button>
                     <button
                         onClick={onClose}
-                        className="w-11 h-11 rounded-2xl bg-slate-900 text-white flex items-center justify-center transition-all hover:bg-slate-800 shadow-lg active:scale-95"
+                        className="w-10 h-10 md:w-11 md:h-11 rounded-xl md:rounded-2xl bg-slate-900 text-white flex items-center justify-center transition-all hover:bg-slate-800 shadow-lg active:scale-95"
                     >
                         ✕
                     </button>
@@ -153,7 +150,7 @@ const Chat: React.FC<ChatProps> = ({ user, connectionId, recipientId, recipientN
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-hide z-10">
+            <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 scrollbar-hide z-10">
                 {isLoading ? (
                     <div className="flex justify-center items-center h-full">
                         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
@@ -231,7 +228,7 @@ const Chat: React.FC<ChatProps> = ({ user, connectionId, recipientId, recipientN
             </div>
 
             {/* Premium Input Area */}
-            <form onSubmit={(e) => handleSendMessage(e)} className="p-6 bg-white/60 backdrop-blur-xl flex items-center gap-4 z-10 border-t border-white/50">
+            <form onSubmit={(e) => handleSendMessage(e)} className="p-4 md:p-6 bg-white/60 backdrop-blur-xl flex items-center gap-3 md:gap-4 z-10 border-t border-white/50">
                 <input 
                     type="file" 
                     ref={fileInputRef} 
@@ -252,8 +249,8 @@ const Chat: React.FC<ChatProps> = ({ user, connectionId, recipientId, recipientN
                         type="text"
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
-                        placeholder="Type an inspiring message..."
-                        className="w-full px-6 py-4 rounded-2xl bg-white border-white/50 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 text-sm font-black shadow-inner transition-all placeholder:text-slate-300 text-slate-900"
+                        placeholder="Message..."
+                        className="w-full px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl bg-white border-white/50 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 text-sm font-black shadow-inner transition-all placeholder:text-slate-300 text-slate-900"
                     />
                 </div>
                 {newMessage.trim() && (

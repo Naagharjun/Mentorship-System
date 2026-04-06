@@ -58,9 +58,9 @@ const Connections: React.FC<{ user: User | null; selectedConnectionId?: string |
     const isMentor = user.role === 'mentor';
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[calc(100vh-200px)] animate-in fade-in duration-500">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 h-[calc(100vh-140px)] md:h-[calc(100vh-200px)] animate-in fade-in duration-500">
             {/* Sidebar - Connection List */}
-            <div className={`lg:col-span-1 bg-white/40 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/40 shadow-xl shadow-indigo-500/5 flex flex-col relative overflow-hidden ${activeChat ? 'hidden lg:flex' : 'flex'}`}>
+            <div className={`lg:col-span-1 bg-white/40 backdrop-blur-xl p-6 md:p-8 rounded-2xl md:rounded-[2.5rem] border border-white/40 shadow-xl shadow-indigo-500/5 flex flex-col relative overflow-hidden ${activeChat ? 'hidden lg:flex' : 'flex'}`}>
                 {/* Decorative blob */}
                 <div className="absolute top-0 left-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl -ml-16 -mt-16"></div>
 
@@ -138,7 +138,7 @@ const Connections: React.FC<{ user: User | null; selectedConnectionId?: string |
                         onClose={() => setActiveChat(null)}
                     />
                 ) : (
-                    <div className="h-full bg-white/30 backdrop-blur-md rounded-[3rem] border border-white flex flex-col items-center justify-center text-center p-12 overflow-hidden relative shadow-inner">
+                    <div className="h-full bg-white/30 backdrop-blur-md rounded-2xl md:rounded-[3rem] border border-white flex flex-col items-center justify-center text-center p-8 md:p-12 overflow-hidden relative shadow-inner">
                         <div className="absolute top-0 left-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-[80px] -ml-32 -mt-32"></div>
                         <div className="absolute bottom-0 right-0 w-64 h-64 bg-violet-500/5 rounded-full blur-[80px] -mr-32 -mt-32"></div>
 

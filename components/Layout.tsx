@@ -16,6 +16,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, activeTab, setActiveTab, unreadCount, hasConnections }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -58,9 +59,42 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, activeTab, se
   });
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-slate-50">
+    <div className="min-h-screen flex flex-col md:flex-row bg-slate-50 relative overflow-x-hidden">
+      {/* Mobile Header (Only on small screens) */}
+      <div className="md:hidden bg-white/80 backdrop-blur-md border-b border-slate-200/60 p-4 flex justify-between items-center sticky top-0 z-30">
+        <h1 className="text-xl font-black text-blue-600 flex items-center gap-2 tracking-tight">
+          <span className="text-2xl bg-blue-50 p-1 rounded-lg">🧩</span>
+          MentorLink
+        </h1>
+        <button
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors"
+        >
+          {isMobileMenuOpen ? (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 12h16m-7 6h7" />
+            </svg>
+          )}
+        </button>
+      </div>
+
+      {/* Sidebar Overlay (Mobile only) */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 md:hidden animate-in fade-in duration-200"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-white border-r border-slate-200 flex-shrink-0 flex flex-col relative z-20">
+      <aside className={`
+        fixed inset-y-0 left-0 w-72 bg-white border-r border-slate-200 flex-shrink-0 flex flex-col z-50 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:w-64 md:z-20
+        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}>
         <div className="p-8">
           <h1 className="text-2xl font-black text-blue-600 flex items-center gap-3 tracking-tight">
             <span className="text-3xl bg-blue-50 p-2 rounded-xl shadow-sm border border-blue-100">🧩</span>
@@ -72,7 +106,10 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, activeTab, se
           {navItems.map((item) => (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => {
+                setActiveTab(item.id);
+                setIsMobileMenuOpen(false);
+              }}
               className={`w-full flex items-center justify-between px-5 py-3.5 rounded-2xl text-sm font-bold transition-all ${activeTab === item.id
                 ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
                 : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
@@ -100,8 +137,8 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, activeTab, se
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col overflow-hidden bg-gradient-to-tr from-slate-50 via-white to-blue-50/30">
-        <header className="bg-white/80 backdrop-blur-md border-b border-slate-200/60 p-4 md:px-8 flex justify-between items-center sticky top-0 z-10 h-28">
+      <main className="flex-1 flex flex-col overflow-hidden bg-gradient-to-tr from-slate-50 via-white to-blue-50/30 w-full">
+        <header className="hidden md:flex bg-white/80 backdrop-blur-md border-b border-slate-200/60 p-4 md:px-8 justify-between items-center sticky top-0 z-10 h-28">
           <h2 className="text-3xl font-black text-slate-900 capitalize tracking-tight">
             {activeTab.replace('-', ' ')}
           </h2>
@@ -151,10 +188,26 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, activeTab, se
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-6 md:p-10 max-w-7xl w-full mx-auto relative">
+        {/* Mobile Sub-Header (Compact profile/notifications on mobile) */}
+        <div className="md:hidden bg-white border-b border-slate-200 p-4 flex justify-between items-center">
+          <h2 className="text-xl font-black text-slate-900 capitalize tracking-tight">
+            {activeTab.replace('-', ' ')}
+          </h2>
+          <div className="flex items-center gap-2">
+            <NotificationBell userId={user.id} />
+            <button
+              onClick={() => setActiveTab('profile')}
+              className="relative"
+            >
+              <UserAvatar src={user.avatar} name={user.name} role={user.role} size={36} className="rounded-full ring-2 ring-blue-500/10" />
+            </button>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-10 max-w-7xl w-full mx-auto relative">
           {/* Subtle background decoration in content area */}
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-100/20 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
-          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-100/20 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
+          <div className="absolute top-0 right-0 w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-blue-100/20 rounded-full blur-[80px] md:blur-[120px] -z-10 pointer-events-none"></div>
+          <div className="absolute bottom-0 left-0 w-[200px] md:w-[400px] h-[200px] md:h-[400px] bg-indigo-100/20 rounded-full blur-[60px] md:blur-[100px] -z-10 pointer-events-none"></div>
 
           <div className="relative z-0">
             {children}
