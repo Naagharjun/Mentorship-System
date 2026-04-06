@@ -102,7 +102,17 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, activeTab, se
           </h1>
         </div>
 
-        <nav className="flex-1 px-4 space-y-2">
+        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+          <div className="pb-4 mb-4 border-b border-slate-100 md:hidden">
+            <div className="flex items-center gap-3 px-4 py-2">
+              <UserAvatar src={user.avatar} name={user.name} role={user.role} size={40} className="rounded-full shadow-sm" />
+              <div>
+                <p className="text-sm font-black text-slate-900 leading-none">{user.name}</p>
+                <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-wider">{user.role}</p>
+              </div>
+            </div>
+          </div>
+
           {navItems.map((item) => (
             <button
               key={item.id}
@@ -126,9 +136,32 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, activeTab, se
               ) : null}
             </button>
           ))}
+
+          <div className="pt-4 mt-4 border-t border-slate-100">
+            <button
+              onClick={() => {
+                setActiveTab('profile');
+                setIsMobileMenuOpen(false);
+              }}
+              className={`w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl text-sm font-bold transition-all ${activeTab === 'profile'
+                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
+                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                }`}
+            >
+              <span className={`text-xl ${activeTab === 'profile' ? 'brightness-0 invert' : ''}`}>👤</span>
+              Edit Profile
+            </button>
+            <button
+              onClick={onLogout}
+              className="w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl text-sm font-bold text-rose-500 hover:bg-rose-50 transition-all mt-1"
+            >
+              <span className="text-xl">🚪</span>
+              Logout
+            </button>
+          </div>
         </nav>
 
-        <div className="p-6 border-t border-slate-100 mt-auto">
+        <div className="p-6 border-t border-slate-100">
           <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">System Core</p>
             <p className="text-[10px] font-bold text-blue-500">v1.2.4 Production</p>
