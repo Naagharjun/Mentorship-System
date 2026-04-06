@@ -204,11 +204,7 @@ const App: React.FC = () => {
     );
   }
 
-  // Admin routing
-  if (auth.user?.role === 'admin') {
-    return <AdminDashboard user={auth.user} onLogout={handleLogout} />;
-  }
-
+  // Admin routing check removed to allow Layout to wrap AdminDashboard
 
   return (
     <ErrorBoundary>
@@ -220,11 +216,11 @@ const App: React.FC = () => {
         unreadCount={unreadMessages}
         hasConnections={hasConnections}
       >
-        {activeTab === 'dashboard' && <Dashboard user={auth.user} onTabChange={setActiveTab} onSelectConnection={setSelectedConnectionId} />}
-        {activeTab === 'mentors' && <MentorList user={auth.user} />}
-        {activeTab === 'sessions' && <Scheduling user={auth.user} />}
-        {activeTab === 'requests' && <Requests user={auth.user} />}
-        {activeTab === 'chat' && (
+        {auth.user?.role !== 'admin' && activeTab === 'dashboard' && <Dashboard user={auth.user} onTabChange={setActiveTab} onSelectConnection={setSelectedConnectionId} />}
+        {auth.user?.role !== 'admin' && activeTab === 'mentors' && <MentorList user={auth.user} />}
+        {auth.user?.role !== 'admin' && activeTab === 'sessions' && <Scheduling user={auth.user} />}
+        {auth.user?.role !== 'admin' && activeTab === 'requests' && <Requests user={auth.user} />}
+        {auth.user?.role !== 'admin' && activeTab === 'chat' && (
           <Connections
             user={auth.user}
             selectedConnectionId={selectedConnectionId}
@@ -232,6 +228,16 @@ const App: React.FC = () => {
         )}
         {activeTab === 'profile' && <Profile user={auth.user} onUpdateUser={(updated) => setAuth(prev => ({ ...prev, user: updated }))} />}
         {activeTab === 'resource-hub' && <ResourceHub user={auth.user} />}
+
+        {/* Admin Views */}
+        {auth.user?.role === 'admin' && ['dashboard', 'activity', 'users'].includes(activeTab) && (
+          <AdminDashboard 
+            user={auth.user} 
+            onLogout={handleLogout} 
+            activeTab={activeTab === 'dashboard' ? 'overview' : activeTab as 'activity' | 'users'} 
+            onTabChange={setActiveTab}
+          />
+        )}
 
       </Layout>
     </ErrorBoundary>

@@ -234,12 +234,20 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, activeTab, se
 
       {/* Persistent Bottom Navigation (Mobile Only) */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-slate-200/60 h-20 px-6 flex justify-between items-center z-40 pb-safe shadow-[0_-8px_30px_rgb(0,0,0,0.04)]">
-        {[
-          { id: 'dashboard', label: 'Home', icon: '📊' },
-          user.role === 'mentee' ? { id: 'mentors', label: 'Search', icon: '🔍' } : { id: 'requests', label: 'Requests', icon: '📩' },
-          { id: 'sessions', label: 'Sessions', icon: '📅' },
-          { id: 'chat', label: 'Chat', icon: '💬', badge: unreadCount },
-        ].map((item) => (
+        {(user.role === 'admin' 
+          ? [
+              { id: 'dashboard', label: 'Overview', icon: '📊' },
+              { id: 'activity', label: 'Activity', icon: '📈' },
+              { id: 'users', label: 'Users', icon: '👥' },
+              { id: 'resource-hub', label: 'Resources', icon: '📚' },
+            ]
+          : [
+              { id: 'dashboard', label: 'Home', icon: '📊' },
+              user.role === 'mentee' ? { id: 'mentors', label: 'Search', icon: '🔍' } : { id: 'requests', label: 'Requests', icon: '📩' },
+              { id: 'sessions', label: 'Sessions', icon: '📅' },
+              { id: 'chat', label: 'Chat', icon: '💬', badge: unreadCount },
+            ]
+        ).map((item: any) => (
           <button
             key={item.id}
             onClick={() => setActiveTab(item.id)}

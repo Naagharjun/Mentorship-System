@@ -3,7 +3,12 @@ import { User, ConnectionRequest, Review, Resource } from '../types';
 import { api } from '../services/api';
 import UserAvatar from './UserAvatar';
 
-const AdminDashboard: React.FC<{ user: User | null, onLogout: () => void }> = ({ user, onLogout }) => {
+const AdminDashboard: React.FC<{ 
+    user: User | null, 
+    onLogout: () => void, 
+    activeTab: 'overview' | 'activity' | 'users', 
+    onTabChange: (tab: string) => void 
+}> = ({ user, onLogout, activeTab, onTabChange }) => {
     const [users, setUsers] = useState<User[]>([]);
     const [requests, setRequests] = useState<ConnectionRequest[]>([]);
     const [reviews, setReviews] = useState<Review[]>([]);
@@ -11,7 +16,6 @@ const AdminDashboard: React.FC<{ user: User | null, onLogout: () => void }> = ({
     const [dbStatus, setDbStatus] = useState<{ connected: boolean, state: number, counts: any, dbName: string, timestamp: string } | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isActionLoading, setIsActionLoading] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<'overview' | 'activity' | 'users'>('overview');
     const [userTypeTab, setUserTypeTab] = useState<'mentor' | 'mentee'>('mentor');
     const [isAdminVerified, setIsAdminVerified] = useState(false);
     const [passcode, setPasscode] = useState('');
@@ -50,7 +54,6 @@ const AdminDashboard: React.FC<{ user: User | null, onLogout: () => void }> = ({
 
     useEffect(() => {
         fetchData();
-        // Poll status every 30 seconds
         const interval = setInterval(async () => {
             try {
                 const status = await api.admin.getStatus();
@@ -74,9 +77,6 @@ const AdminDashboard: React.FC<{ user: User | null, onLogout: () => void }> = ({
         } else {
             setPasscodeError(true);
             setPasscode('');
-            // Optional: logout on too many failures? User said "otherwise logout".
-            // I'll show error first, then maybe logout after 3 failed attempts?
-            // Actually, I'll just keep it simple as requested.
         }
     };
 
@@ -164,7 +164,6 @@ const AdminDashboard: React.FC<{ user: User | null, onLogout: () => void }> = ({
         setIsActionLoading(targetUserId);
         try {
             const result = await api.admin.toggleBlockUser(targetUserId);
-            // Update local users state
             setUsers(users.map(u => u.id === targetUserId ? { ...u, isBlocked: result.isBlocked } : u));
         } catch (error) {
             console.error("Failed to toggle block status", error);
@@ -195,63 +194,8 @@ const AdminDashboard: React.FC<{ user: User | null, onLogout: () => void }> = ({
     };
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-50 font-sans selection:bg-rose-500/30">
-            {/* Header */}
-            <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-white/5">
-                <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="w-11 h-11 bg-gradient-to-br from-rose-500 to-orange-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-rose-500/20">
-                            🛡️
-                        </div>
-                        <div>
-                            <span className="text-xl font-black tracking-tight text-white block leading-none mb-1">MentorLink Command</span>
-                            <div className="flex items-center gap-2">
-                                <span className="text-[9px] font-black text-rose-500 uppercase tracking-widest">Alpha Admin</span>
-                                <div className="h-1 w-1 rounded-full bg-white/20"></div>
-                                <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[9px] font-black uppercase tracking-widest ${
-                                    dbStatus?.connected ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'
-                                }`}>
-                                    <div className={`w-1 h-1 rounded-full ${dbStatus?.connected ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`}></div>
-                                    MongoDB {dbStatus?.connected ? 'Connected' : 'Offline'}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-8">
-                        <nav className="hidden md:flex items-center gap-1 bg-white/5 p-1 rounded-2xl border border-white/5">
-                            {(['overview', 'activity', 'users'] as const).map(tab => (
-                                <button
-                                    key={tab}
-                                    onClick={() => setActiveTab(tab)}
-                                    className={`px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
-                                >
-                                    {tab}
-                                </button>
-                            ))}
-                        </nav>
-                        <div className="h-8 w-px bg-white/10"></div>
-                        <div className="flex items-center gap-4">
-                            <div className="text-right hidden sm:block">
-                                <p className="text-sm font-black text-white leading-none mb-1">{user?.name}</p>
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Super Admin</p>
-                            </div>
-                            <UserAvatar src={user?.avatar} name={user?.name} size={44} className="rounded-xl border border-white/10 shadow-xl" />
-                            <button
-                                onClick={onLogout}
-                                className="p-2.5 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all border border-transparent hover:border-rose-500/20"
-                                title="Logout"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            <main className="max-w-7xl mx-auto px-6 py-12 animate-in fade-in duration-700 slide-in-from-bottom-4">
+        <div className="text-slate-50 font-sans selection:bg-rose-500/30">
+            <div className="py-6 animate-in fade-in duration-700 slide-in-from-bottom-4">
                 {isLoading ? (
                     <div className="flex flex-col items-center justify-center p-20 gap-4">
                         <div className="animate-spin rounded-full h-12 w-12 border-[3px] border-rose-500/20 border-t-rose-500"></div>
@@ -276,7 +220,6 @@ const AdminDashboard: React.FC<{ user: User | null, onLogout: () => void }> = ({
                                     </div>
                                 </div>
 
-                                {/* Stats Grid */}
                                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                                     {[
                                         { label: 'Mentors', value: totalMentors, color: 'rose', trend: dbStatus?.counts?.users ? 'Live Sync' : '+12%', icon: '👨‍🏫' },
@@ -284,7 +227,7 @@ const AdminDashboard: React.FC<{ user: User | null, onLogout: () => void }> = ({
                                         { label: 'Sessions', value: totalSessions, color: 'purple', trend: 'DB Checked', icon: '📅' },
                                         { label: 'Resources', value: resources.length, color: 'amber', trend: 'Active', icon: '📚' }
                                     ].map(stat => (
-                                        <div key={stat.label} className="bg-white/[0.03] p-8 rounded-[2rem] border border-white/5 relative overflow-hidden group hover:bg-white/[0.05] transition-all">
+                                        <div key={stat.label} className="bg-white/[0.03] p-8 rounded-[2rem] border border-white/5 relative overflow-hidden group hover:bg-white/[0.05] transition-all shadow-xl">
                                             <div className={`absolute top-0 right-0 w-32 h-32 bg-${stat.color}-500/10 rounded-full blur-3xl -mr-16 -mt-16 transition-transform group-hover:scale-150`}></div>
                                             <div className="flex justify-between items-start mb-6">
                                                 <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{stat.label}</h3>
@@ -300,8 +243,8 @@ const AdminDashboard: React.FC<{ user: User | null, onLogout: () => void }> = ({
                                 </div>
 
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                                    <div className="bg-white/[0.02] border border-white/5 rounded-[2.5rem] p-8">
-                                        <h3 className="text-xl font-black text-white tracking-tight mb-8">Recent Platforms Events</h3>
+                                    <div className="bg-white/[0.02] border border-white/5 rounded-[2.5rem] p-8 shadow-2xl">
+                                        <h3 className="text-xl font-black text-white tracking-tight mb-8">Recent Platform Events</h3>
                                         <div className="space-y-6">
                                             {allActivities.slice(0, 5).map((act, i) => (
                                                 <div key={act.id + i} className="flex gap-4 items-start group">
@@ -324,11 +267,11 @@ const AdminDashboard: React.FC<{ user: User | null, onLogout: () => void }> = ({
                                                     </div>
                                                 </div>
                                             ))}
-                                            <button onClick={() => setActiveTab('activity')} className="w-full py-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] hover:text-white transition-colors border-t border-white/5 mt-4">View All Activity</button>
+                                            <button onClick={() => onTabChange('activity')} className="w-full py-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] hover:text-white transition-colors border-t border-white/5 mt-4">View All Activity</button>
                                         </div>
                                     </div>
 
-                                    <div className="bg-white/[0.02] border border-white/5 rounded-[2.5rem] p-8 flex flex-col justify-center items-center text-center">
+                                    <div className="bg-white/[0.02] border border-white/5 rounded-[2.5rem] p-8 flex flex-col justify-center items-center text-center shadow-2xl">
                                         <div className="w-20 h-20 bg-emerald-500/10 rounded-3xl flex items-center justify-center text-4xl mb-6 border border-emerald-500/20 shadow-2xl shadow-emerald-500/10">📈</div>
                                         <h3 className="text-2xl font-black text-white tracking-tight mb-2">Growth Milestone</h3>
                                         <p className="text-slate-400 max-w-xs">You've reached 85% of your target monthly active users.</p>
@@ -344,13 +287,13 @@ const AdminDashboard: React.FC<{ user: User | null, onLogout: () => void }> = ({
                             <section className="space-y-12 max-w-3xl mx-auto">
                                 <div className="text-center">
                                     <h2 className="text-4xl font-black text-white tracking-tighter mb-4">Global Activity Feed</h2>
-                                    <p className="text-slate-400 font-medium">Monitoring every interaction across the platform.</p>
+                                    <p className="text-slate-400 font-medium italic">Monitoring every interaction across the platform.</p>
                                 </div>
 
                                 <div className="space-y-4 relative">
                                     <div className="absolute left-7 top-0 bottom-0 w-px bg-white/5"></div>
                                     {allActivities.map((act, i) => (
-                                        <div key={act.id + i} className="relative flex gap-8 items-start bg-white/[0.02] hover:bg-white/[0.04] p-6 rounded-3xl border border-white/5 transition-all group">
+                                        <div key={act.id + i} className="relative flex gap-8 items-start bg-white/[0.02] hover:bg-white/[0.04] p-6 rounded-3xl border border-white/5 transition-all group shadow-xl">
                                             <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border-2 z-10 transition-transform group-hover:scale-110 ${
                                                 act.type === 'request' ? 'bg-blue-600/10 border-blue-500/20 text-blue-400 shadow-lg shadow-blue-500/10' :
                                                 act.type === 'review' ? 'bg-rose-600/10 border-rose-500/20 text-rose-400 shadow-lg shadow-rose-500/10' :
@@ -414,47 +357,78 @@ const AdminDashboard: React.FC<{ user: User | null, onLogout: () => void }> = ({
 
                                 <div className="space-y-12">
                                     {userTypeTab === 'mentor' ? (
-                                        /* Mentors Table */
                                         <div className="space-y-4 animate-in fade-in slide-in-from-left-4 duration-500">
-                                            <div className="flex items-center gap-4 px-2">
-                                                <div className="w-8 h-8 bg-indigo-500/10 rounded-lg flex items-center justify-center text-indigo-400">👨‍🏫</div>
-                                                <h3 className="text-xl font-black text-white tracking-tight">Mentor Directory</h3>
-                                                <span className="text-[10px] font-black bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded-md border border-indigo-500/20 uppercase tracking-widest">{users.filter(u => u.role === 'mentor').length} Active Mentors</span>
+                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-2">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-8 h-8 bg-indigo-500/10 rounded-lg flex items-center justify-center text-indigo-400">👨‍🏫</div>
+                                                    <h3 className="text-xl font-black text-white tracking-tight">Mentor Directory</h3>
+                                                </div>
+                                                <span className="text-[10px] font-black bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full border border-indigo-500/20 uppercase tracking-widest self-start sm:self-center">
+                                                    {users.filter(u => u.role === 'mentor').length} Active Mentors
+                                                </span>
                                             </div>
-                                            <div className="bg-white/5 rounded-[3rem] border border-white/10 overflow-hidden shadow-2xl">
+
+                                            <div className="grid grid-cols-1 gap-4 md:hidden">
+                                                {users.filter(u => u.role === 'mentor').map(u => (
+                                                    <div key={u.id} className="bg-white/5 border border-white/10 rounded-[2rem] p-6 space-y-6 shadow-xl">
+                                                        <div className="flex items-center gap-4">
+                                                            <UserAvatar src={u.avatar} name={u.name} size={64} className="rounded-2xl border border-white/10" />
+                                                            <div className="overflow-hidden">
+                                                                <p className="font-black text-white text-lg tracking-tight truncate">{u.name}</p>
+                                                                <p className="text-xs font-bold text-slate-500 truncate">{u.email}</p>
+                                                                <div className="flex items-center gap-2 mt-2">
+                                                                    <div className={`w-1.5 h-1.5 rounded-full ${u.isBlocked ? 'bg-rose-500' : 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]'}`}></div>
+                                                                    <span className={`text-[9px] font-black uppercase tracking-widest ${u.isBlocked ? 'text-rose-500' : 'text-emerald-500'}`}>
+                                                                        {u.isBlocked ? 'Blocked' : 'Active'}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="bg-white/[0.02] rounded-2xl p-4 border border-white/5">
+                                                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Specialization</p>
+                                                            <p className="text-sm font-bold text-slate-300">{u.specialization || 'Generalist'}</p>
+                                                        </div>
+                                                        <div className="pt-2">
+                                                            {renderBlockButton(u.id, false)}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div className="hidden md:block bg-white/5 rounded-[3.5rem] border border-white/10 overflow-hidden shadow-2xl">
                                                 <table className="w-full text-left">
                                                     <thead>
                                                         <tr className="bg-white/[0.02] border-b border-white/10">
-                                                            <th className="px-10 py-6 text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Mentor Profile</th>
-                                                            <th className="px-10 py-6 text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Specialization</th>
-                                                            <th className="px-10 py-6 text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Account Status</th>
-                                                            <th className="px-10 py-6 text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] text-right">Administrative Actions</th>
+                                                            <th className="px-10 py-8 text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Mentor Profile</th>
+                                                            <th className="px-10 py-8 text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Specialization</th>
+                                                            <th className="px-10 py-8 text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Account Status</th>
+                                                            <th className="px-10 py-8 text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] text-right">Actions</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody className="divide-y divide-white/10">
                                                         {users.filter(u => u.role === 'mentor').map(u => (
                                                             <tr key={u.id} className="hover:bg-indigo-500/[0.02] transition-colors group">
-                                                                <td className="px-10 py-6">
-                                                                    <div className="flex items-center gap-4">
-                                                                        <UserAvatar src={u.avatar} name={u.name} size={48} className="rounded-2xl border border-white/10 shadow-lg group-hover:scale-110 transition-transform" />
+                                                                <td className="px-10 py-8">
+                                                                    <div className="flex items-center gap-5">
+                                                                        <UserAvatar src={u.avatar} name={u.name} size={56} className="rounded-2xl border border-white/10 shadow-lg group-hover:scale-110 transition-transform" />
                                                                         <div>
-                                                                            <p className="font-black text-white text-lg tracking-tight leading-none mb-1.5">{u.name}</p>
+                                                                            <p className="font-black text-white text-xl tracking-tight leading-none mb-1.5">{u.name}</p>
                                                                             <p className="text-xs font-bold text-slate-500 leading-none">{u.email}</p>
                                                                         </div>
                                                                     </div>
                                                                 </td>
-                                                                <td className="px-10 py-6">
+                                                                <td className="px-10 py-8">
                                                                     <p className="text-sm font-bold text-slate-300 tracking-tight">{u.specialization || 'Generalist'}</p>
                                                                 </td>
-                                                                <td className="px-10 py-6">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <div className={`w-1.5 h-1.5 rounded-full ${u.isBlocked ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]'}`}></div>
+                                                                <td className="px-10 py-8">
+                                                                    <div className="flex items-center gap-2.5">
+                                                                        <div className={`w-2 h-2 rounded-full ${u.isBlocked ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.5)]'}`}></div>
                                                                         <span className={`text-[10px] font-black uppercase tracking-widest ${u.isBlocked ? 'text-rose-500' : 'text-emerald-500'}`}>
                                                                             {u.isBlocked ? 'Blocked' : 'Active'}
                                                                         </span>
                                                                     </div>
                                                                 </td>
-                                                                <td className="px-10 py-6 text-right">
+                                                                <td className="px-10 py-8 text-right">
                                                                     {renderBlockButton(u.id)}
                                                                 </td>
                                                             </tr>
@@ -464,43 +438,70 @@ const AdminDashboard: React.FC<{ user: User | null, onLogout: () => void }> = ({
                                             </div>
                                         </div>
                                     ) : (
-                                        /* Mentees Table */
                                         <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
-                                            <div className="flex items-center gap-4 px-2">
-                                                <div className="w-8 h-8 bg-rose-500/10 rounded-lg flex items-center justify-center text-rose-400">👨‍🎓</div>
-                                                <h3 className="text-xl font-black text-white tracking-tight">Mentee Directory</h3>
-                                                <span className="text-[10px] font-black bg-rose-500/10 text-rose-400 px-2 py-0.5 rounded-md border border-rose-500/20 uppercase tracking-widest">{users.filter(u => u.role === 'mentee').length} Active Mentees</span>
+                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-2">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-8 h-8 bg-rose-500/10 rounded-lg flex items-center justify-center text-rose-400">👨‍🎓</div>
+                                                    <h3 className="text-xl font-black text-white tracking-tight">Mentee Directory</h3>
+                                                </div>
+                                                <span className="text-[10px] font-black bg-rose-500/10 text-rose-400 px-3 py-1 rounded-full border border-rose-500/20 uppercase tracking-widest self-start sm:self-center">
+                                                    {users.filter(u => u.role === 'mentee').length} Active Mentees
+                                                </span>
                                             </div>
-                                            <div className="bg-white/5 rounded-[3rem] border border-white/10 overflow-hidden shadow-2xl">
+
+                                            <div className="grid grid-cols-1 gap-4 md:hidden">
+                                                {users.filter(u => u.role === 'mentee').map(u => (
+                                                    <div key={u.id} className="bg-white/5 border border-white/10 rounded-[2rem] p-6 space-y-6 shadow-xl">
+                                                        <div className="flex items-center gap-4">
+                                                            <UserAvatar src={u.avatar} name={u.name} size={64} className="rounded-2xl border border-white/10" />
+                                                            <div className="overflow-hidden">
+                                                                <p className="font-black text-white text-lg tracking-tight truncate">{u.name}</p>
+                                                                <p className="text-xs font-bold text-slate-500 truncate">{u.email}</p>
+                                                                <div className="flex items-center gap-2 mt-2">
+                                                                    <div className={`w-1.5 h-1.5 rounded-full ${u.isBlocked ? 'bg-rose-500' : 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]'}`}></div>
+                                                                    <span className={`text-[9px] font-black uppercase tracking-widest ${u.isBlocked ? 'text-rose-500' : 'text-emerald-500'}`}>
+                                                                        {u.isBlocked ? 'Blocked' : 'Active'}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="pt-2">
+                                                            {renderBlockButton(u.id, false)}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div className="hidden md:block bg-white/5 rounded-[3.5rem] border border-white/10 overflow-hidden shadow-2xl">
                                                 <table className="w-full text-left">
                                                     <thead>
                                                         <tr className="bg-white/[0.02] border-b border-white/10">
-                                                            <th className="px-10 py-6 text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Mentee Profile</th>
-                                                            <th className="px-10 py-6 text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Account Status</th>
-                                                            <th className="px-10 py-6 text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] text-right">Administrative Actions</th>
+                                                            <th className="px-10 py-8 text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Mentee Profile</th>
+                                                            <th className="px-10 py-8 text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Account Status</th>
+                                                            <th className="px-10 py-8 text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] text-right">Actions</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody className="divide-y divide-white/10">
                                                         {users.filter(u => u.role === 'mentee').map(u => (
                                                             <tr key={u.id} className="hover:bg-rose-500/[0.02] transition-colors group">
-                                                                <td className="px-10 py-6">
-                                                                    <div className="flex items-center gap-4">
-                                                                        <UserAvatar src={u.avatar} name={u.name} size={48} className="rounded-2xl border border-white/10 shadow-lg group-hover:scale-110 transition-transform" />
+                                                                <td className="px-10 py-8">
+                                                                    <div className="flex items-center gap-5">
+                                                                        <UserAvatar src={u.avatar} name={u.name} size={56} className="rounded-2xl border border-white/10 shadow-lg group-hover:scale-110 transition-transform" />
                                                                         <div>
-                                                                            <p className="font-black text-white text-lg tracking-tight leading-none mb-1.5">{u.name}</p>
+                                                                            <p className="font-black text-white text-xl tracking-tight leading-none mb-1.5">{u.name}</p>
                                                                             <p className="text-xs font-bold text-slate-500 leading-none">{u.email}</p>
                                                                         </div>
                                                                     </div>
                                                                 </td>
-                                                                <td className="px-10 py-6">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <div className={`w-1.5 h-1.5 rounded-full ${u.isBlocked ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]'}`}></div>
+                                                                <td className="px-10 py-8">
+                                                                    <div className="flex items-center gap-2.5">
+                                                                        <div className={`w-2 h-2 rounded-full ${u.isBlocked ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.5)]'}`}></div>
                                                                         <span className={`text-[10px] font-black uppercase tracking-widest ${u.isBlocked ? 'text-rose-500' : 'text-emerald-500'}`}>
                                                                             {u.isBlocked ? 'Blocked' : 'Active'}
                                                                         </span>
                                                                     </div>
                                                                 </td>
-                                                                <td className="px-10 py-6 text-right">
+                                                                <td className="px-10 py-8 text-right">
                                                                     {renderBlockButton(u.id)}
                                                                 </td>
                                                             </tr>
@@ -515,7 +516,7 @@ const AdminDashboard: React.FC<{ user: User | null, onLogout: () => void }> = ({
                         )}
                     </div>
                 )}
-            </main>
+            </div>
         </div>
     );
 };
