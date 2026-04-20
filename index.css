@@ -121,7 +121,55 @@ body {
   }
 }
 
-/* Custom transitions for the mobile sidebar */
-.sidebar-transition {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+/* Admin Theme & Premium Utilities */
+:root {
+  --admin-primary: #6366f1; /* indigo-500 */
+  --admin-accent: #f43f5e; /* rose-500 */
+  --admin-bg: #0f172a; /* slate-900 */
 }
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+.animate-scanline {
+  animation: scanline 8s linear infinite;
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.05); }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 4s ease-in-out infinite;
+}
+
+.admin-card-glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.text-gradient-admin {
+  background: linear-gradient(to right, #818cf8, #f43f5e);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.admin-glow {
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+}
+
+/* Custom Scrollbar for Admin */
+.admin-scroll::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.3);
+}
+
+.admin-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+

@@ -28,7 +28,14 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, activeTab, se
   if (!user) return <>{children}</>;
 
   /* Role-based navigation */
-  const navItems = user?.role === 'mentor'
+  const navItems = user?.role === 'admin'
+    ? [
+      { id: 'dashboard', label: 'Overview', icon: '🏠' },
+      { id: 'activity', label: 'Activity Logs', icon: '📈' },
+      { id: 'users', label: 'User Directory', icon: '👥' },
+      { id: 'resource-hub', label: 'Resources', icon: '📚' },
+    ]
+    : user?.role === 'mentor'
     ? [
       { id: 'dashboard', label: 'Dashboard', icon: '📊' },
       { id: 'sessions', label: 'My Sessions', icon: '📅' },
